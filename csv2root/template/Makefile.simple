@@ -1,2 +1,0 @@
-all:
-	g++ -o template csv2rootMain.C.template csv2root.cxx.template `root-config --cflags --libs` --std=c++14 
