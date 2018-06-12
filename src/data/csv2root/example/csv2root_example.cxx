@@ -17,13 +17,12 @@
 /*//////////////////////////////////////////////////
 /                   CONSTRUCTOR                    /
 //////////////////////////////////////////////////*/
-Example::Example(std::string input, std::string output_id){
+Example::Example(std::string input){
   /* Two standard attributes.
      More should not be necessary,
      but can be added in any case.
   */
   input_file = input;
-  id = output_id;
 }
 
 
@@ -35,7 +34,7 @@ Example::~Example(){
     Optional print statement
   */
   using namespace std;
-  cout << "Deleting temporary csv2root object. Converted root file: '" << id << "'" << endl; 
+  cout << "Deleting temporary csv2root object. Converted root file: '" << input_file << "'" << endl; 
 }
 
 
@@ -46,7 +45,8 @@ void Example::convert(){
   /*
     Name output file and create instance of data struct
   */
-  std::string output_file = id + ".root";
+  std::string output_file = input_file.substr(0,input_file.find(".csv"));
+  output_file = output_file + ".root";
   example_struct ex;
   
   /*

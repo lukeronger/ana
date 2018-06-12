@@ -50,7 +50,7 @@ class Example{
 
     3. Common Ana convert method 
   */
-  Example(std::string input, std::string output_id);
+  Example(std::string input);
   ~Example();
   void convert();
  private:
@@ -58,12 +58,10 @@ class Example{
     Attributes: 
     
     -input_file: CSV file to convert to .root
-    -id: data file id
-    
+   
     add any as necessary (not necessary for most cases)
   */
   std::string input_file;
-  std::string id;
 
   /*
     Helper methods:
