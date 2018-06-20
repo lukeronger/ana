@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import src.data.hipo2root.run_hipo2root as hipo2root
+import src.selector.generate_selector as gen_sel
+
+##################################################
+#                                                #
+#                   GLOBALS                      #                                                                                
+#                                                #                                                                                
+##################################################
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+HOME = os.path.expanduser("~")
+
+PROJECT_NAME = ""
+TREE_HEAD = ""
+CHAIN_DIR = ""
+ANALYSIS_DIR = ""
+OBJECT_NAME = ""
+
+##################################################
+#                                                #
+#               HELPER FUNCTIONS                 #
+#                                                #
+##################################################
+
+def fix_path(p):
+    """
+    full path p = a full file path potentially
+    with symbol '~' in it
+
+    returns a file path that preserves original
+    location but will work with python
+    """
+    if p[0] == '~':
+        p = HOME + p[1:]
+    return p
+
+def get_head_name(fn):
+    """
+    file fn = full path the head of chain file
+
+    returns the truncated name
+    """
+    return fn[(len(fn) - fn[::-1].find('/')):]
+
+def get_file_dir(fn):
+    """
+    file fn = full path the head of chain file
+
+    returns the data directory
+    """
+    return fn[:(len(fn) - fn[::-1].find('/'))] 
+
+def new_project():
+    """
+    creates a new project directory in .usr
+
+    returns 1 on success, -1 on fail
+    """
+    d = HERE + "/.usr/projects/"
+    os.chdir(d)
+    for p in os.listdir(d):
+        if p == PROJECT_NAME:
+            print("ERROR: Project already exists, try with new name.")
+            return -1
+    com = "mkdir " + PROJECT_NAME
+    os.system(com)
+    return 1
+
+##################################################
+#                                                #
+#                   SYSTEM                       #
+#                                                #
+##################################################
+
+def cl_run(ana_args):
+    """
+    command line arguments ana_args =
+    [name-of-project] [full-path-to-head-of-chain] [full-path-to-analysis-directory] [Tree-name*]
+   
+    *Tree name only needs to be provided if feeding in ROOT files, otherwise it will be know due to conversion.
+
+    Runs Ana.
+    """
+    global PROJECT_NAME
+    global TREE_HEAD
+    global CHAIN_DIR
+    global ANALYSIS_DIR
+    PROJECT_NAME = ana_args[0]
+    TREE_HEAD = fix_path(ana_args[1])
+    CHAIN_DIR = get_file_dir(TREE_HEAD)
+    ANALYSIS_DIR = fix_path(ana_args[2]) 
+    try:
+        global OBJECT_NAME
+        OBJECT_NAME = ana_args[3]
+    except:
+        pass
+
+    if new_project() == -1:
+        return
+
+    if TREE_HEAD[-4:] == 'root':
+
+        # handle data files
+        os.chdir(HERE + "/.usr/projects/" + PROJECT_NAME)
+        os.system("mkdir data")
+        for f in os.listdir(CHAIN_DIR):
+            if f.endswith(".root"):
+                com = "cp " + CHAIN_DIR + "/" + f + " " + HERE + "/.usr/projects/" + PROJECT_NAME  +"/data/"
+                os.system(com)
+
+        # generate selector
+        os.chdir(HERE + "/src/selector/")
+        hn = get_head_name(TREE_HEAD)
+        rt_h = HERE + "/.usr/projects/" + PROJECT_NAME + "/data/" + hn
+        com = "./make_selector " + PROJECT_NAME + " " + rt_h + " " + OBJECT_NAME 
+        os.system(com)
+        com = "rm " + PROJECT_NAME + "Selector.C"
+        os.system(com)
+        gen_sel.generate(PROJECT_NAME, ana_args[2])
+
+        # move generator and such to analysis dir for project
+        os.chdir(HERE + "/.usr/projects/" + PROJECT_NAME)
+        os.system("mkdir analysis")
+        os.system("mv " + HERE+ "/src/selector/" + PROJECT_NAME + "* " + HERE + "/.usr/projects/" + PROJECT_NAME + "/analysis")
+        os.system("cp " + HERE+ "/src/selector/run_process " + HERE + "/.usr/projects/" + PROJECT_NAME + "/analysis")
+
+        # run analysis and send output to analysis dir
+        os.chdir(HERE + "/.usr/projects/" + PROJECT_NAME + "/analysis/")
+        com = "./run_process " + PROJECT_NAME + " " + rt_h + " " + OBJECT_NAME  
+        os.system(com)
+        os.system("cp -r * " + ANALYSIS_DIR)
+        print("\nAll done, output in analysis directory.\n\n")
+        
+        
+    elif TREE_HEAD[-4:] == 'hipo':
+
+        # handle data files
+        os.chdir(HERE + "/src/data/hipo2root/")
+        hipo2root.convert(TREE_HEAD)
+        os.chdir(HERE + "/.usr/projects/" + PROJECT_NAME)
+        os.system("mkdir data")
+        for f in os.listdir(CHAIN_DIR):
+            if f.endswith(".root"):
+                com = "cp " + CHAIN_DIR + "/" + f + " " + HERE + "/.usr/projects/" + PROJECT_NAME  +"/data/"
+                os.system(com)
+
+        # generate selector
+        os.chdir(HERE + "/src/selector/")
+        hn = get_head_name(TREE_HEAD)
+        rt_h = HERE + "/.usr/projects/" + PROJECT_NAME + "/data/" + hn[:-4]  + "root" 
+        com = "./make_selector " + PROJECT_NAME + " " + rt_h + " clas12"
+        os.system(com)
+        com = "rm " + PROJECT_NAME + "Selector.C"
+        os.system(com)
+        gen_sel.generate(PROJECT_NAME, ANALYSIS_DIR)
+
+        # move generator and such to analysis dir for project
+        os.chdir(HERE + "/.usr/projects/" + PROJECT_NAME)
+        os.system("mkdir analysis")
+        os.system("mv " + HERE+ "/src/selector/" + PROJECT_NAME + "* " + HERE + "/.usr/projects/" + PROJECT_NAME + "/analysis")
+        os.system("cp " + HERE+ "/src/selector/run_process " + HERE + "/.usr/projects/" + PROJECT_NAME + "/analysis")
+
+        # run analysis and send output to analysis dir
+        os.chdir(HERE + "/.usr/projects/" + PROJECT_NAME + "/analysis/")
+        com = "./run_process " + PROJECT_NAME + " " + rt_h + " clas12"  
+        os.system(com)
+        os.system("cp -r * " + ANALYSIS_DIR)
+        print("\nAll done, output in analysis directory.\n\n")
+        
+    else:
+
+        # erro
+        print("\nERROR: Filetype is not yet supported.\n\n")
+        print("\nPost about it on GitHub.\n\n")
+        return
+
+    
+def help_info():
+    """
+    prints the help info to stdout
+    """
+    print("Usage: \n")
+    print("/.ana [name-of-project] [full-path-to-head-of-chain] [full-path-to-analysis-directory] [Tree-name*]")
+    print("\n")
+    print("*Tree name only needs to be provided if feeding in ROOT files, otherwise it will be know due to conversion.")
+    print("\n\n\n")
+    return
+
+def art():
+    """
+    displays the ana ascii art to stdout
+    """
+    print("\n\n\n")
+    com = "cat " + HERE + "/docs/ana_ascii_art.txt"
+    os.system(com)
+    print("\n\n\n")
+
+def main(args):
+    # display art and help info
+    if len(args) == 0:
+        art()
+        print("\n\n")
+        help_info()
+        return
+    else:
+        # a '?' only yields help info
+        if args[0] == "?":
+            help_info()
+        else:
+        # else it is a go Captain
+            cl_run(args)
+    return
+        
+if __name__ == "__main__":
+    main(sys.argv[1:])

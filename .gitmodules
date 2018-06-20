@@ -1,0 +1,3 @@
+[submodule "src/data/hipo2root"]
+	path = src/data/hipo2root
+	url = https://github.com/smarky7CD/hipo2root
