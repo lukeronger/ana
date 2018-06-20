@@ -34,7 +34,7 @@ This is the production repository for for Ana ('ahhn'-'ahh') a general<sup>1</su
 ROOT needs to be installed to use Ana. For help, perhaps this [Gist](https://gist.github.com/smarky7CD/928aedbb873d97e23a3b4fc2fb202311 "ROOT Install Guide") I wrote detailing installation on Ubuntu 18.04 will prove useful. Moreover, the dependencies listed in that document are the same for Ana. So read that guide for those as well.
 
 ```
-git clone git clone --recurse-submodules https://github.com/smarky7CD/ana
+git clone --recurse-submodules https://github.com/smarky7CD/ana
 
 cd ana
 
