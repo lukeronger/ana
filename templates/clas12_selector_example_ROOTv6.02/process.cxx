@@ -5,7 +5,7 @@ mySELECTOR::process(){
     go. Check ROOT documentation for
     more information.
   */
-  fChain>GetTree()->GetEntry(entry);
+  fChain->GetTree()->GetEntry(entry);
   // CODE HERE
   nelec=0;
   i_el = -1;

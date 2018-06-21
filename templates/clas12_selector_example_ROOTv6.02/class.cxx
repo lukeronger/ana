@@ -16,7 +16,7 @@ mySELECTOR::additions(){
    void    Calc_kine_P();
    void    Calc_kine_N();   
    void    Calc_kine_MC();
-
+   void    find_closest(Int_t begin, vector<double> theta, vector<double> phi, vector<double> beta);
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
    Int_t nelec,nprot,nneut,nphotFT,nphotEC,nphot;  
