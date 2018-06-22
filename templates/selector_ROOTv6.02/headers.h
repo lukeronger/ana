@@ -18,23 +18,12 @@
 */
 
 // Examples
-#include <TROOT.h>
-#include <TChain.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TSelector.h>
-#include <TH2.h>
-#include <TH1.h>
-#include <string.h>
-#include <string>
+
+// Headers
+#include "TH2.h"
+#include <iostream>
+#include <stack>
 #include <math.h>
-#include <TVirtualIndex.h>
-#include <iostream>             // std::cout, std::endl
-#include <fstream>              // std::ifstream
-#include <sstream>   
-#include <TVector3.h>
-#include <TLorentzVector.h>
-#include <TSystem.h>
-#include <cstdlib>
-#include <map>
-#include <vector>
+
+// Globals
+Int_t total;

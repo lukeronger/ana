@@ -54,18 +54,45 @@ def get_file_dir(fn):
     """
     return fn[:(len(fn) - fn[::-1].find('/'))] 
 
+
+def remove_project(pn):
+    """
+    deletes a specific or all projects
+    from the project folder
+    """
+    os.chdir(HERE)
+    if pn == "all":
+        os.system("rm -rf .usr/projects/*")
+        os.system("touch .usr/projects/p.md")
+        os.system("echo '# Projects' > .usr/projects/p.md")
+    else:
+        try:
+            os.system("rm -rf .usr/projects/" + pn)
+        except:
+            print("Project not found.")
+
 def new_project():
     """
     creates a new project directory in .usr
 
     returns 1 on success, -1 on fail
     """
+    if PROJECT_NAME == "all":
+        print("Protected name, try literally any other!")
+        return -1
     d = HERE + "/.usr/projects/"
     os.chdir(d)
     for p in os.listdir(d):
         if p == PROJECT_NAME:
-            print("ERROR: Project already exists, try with new name.")
-            return -1
+            x = input("Project already exists, overwrite? y/n \t")
+            if x == "y":
+                remove_project(PROJECT_NAME)
+                os.chdir(d)
+                com = "mkdir " + PROJECT_NAME
+                os.system(com)
+                return 1
+            else:
+                return -1
     com = "mkdir " + PROJECT_NAME
     os.system(com)
     return 1
@@ -173,7 +200,7 @@ def cl_run(ana_args):
         
     else:
 
-        # erro
+        # error
         print("\nERROR: Filetype is not yet supported.\n\n")
         print("\nPost about it on GitHub.\n\n")
         return
@@ -185,9 +212,11 @@ def help_info():
     """
     print("Usage: \n")
     print("/.ana [name-of-project] [full-path-to-head-of-chain] [full-path-to-analysis-directory] [Tree-name*]")
-    print("\n")
     print("*Tree name only needs to be provided if feeding in ROOT files, otherwise it will be know due to conversion.")
-    print("\n\n\n")
+    print("\n\n")
+    print("To remove a project: ")
+    print("./ana remove [project-name or all for all projects]")
+    print("\n\n")
     return
 
 def art():
@@ -210,6 +239,9 @@ def main(args):
         # a '?' only yields help info
         if args[0] == "?":
             help_info()
+        # remove a project
+        elif args[0] == "remove":
+            remove_project(args[1])
         else:
         # else it is a go Captain
             cl_run(args)

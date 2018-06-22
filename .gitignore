@@ -1,3 +1,11 @@
+## project specific ##
+
+*.hipo
+run_process
+make_selector
+hipo2root
+hipo2root.cpp
+
 ## c++ ##
 
 # Prerequisites
